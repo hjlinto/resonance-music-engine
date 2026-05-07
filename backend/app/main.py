@@ -7,11 +7,14 @@ during local development and deployment.
 """
 
 from fastapi import FastAPI
+from app.routes.test_db import router as test_db_router
 
 app = FastAPI(
     title="Resonance API",
     description="Backend API for the Resonance music recommendation system.",
     version="0.1.0")
+
+app.include_router(test_db_router)
 
 @app.get("/health")
 def health_check():
