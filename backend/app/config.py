@@ -23,7 +23,11 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str | None = os.getenv("DATABASE_URL")
 
-    SPOTIFY_CLIENT_ID: str | None = os.getenv("SPOTIFY_CLIENT_ID")
-    SPOTIFY_CLIENT_SECRET: str | None = os.getenv("SPOTIFY_CLIENT_SECRET")
+    SPOTIFY_CLIENT_ID: str = os.getenv("SPOTIFY_CLIENT_ID", "")
+    SPOTIFY_CLIENT_SECRET: str = os.getenv("SPOTIFY_CLIENT_SECRET", "")
+    SPOTIFY_AUTH_URL: str = "https://accounts.spotify.com/authorize"
+    SPOTIFY_TOKEN_URL: str = "https://accounts.spotify.com/api/token"
+    SPOTIFY_SCOPES: str = "user-top-read"
+    SPOTIFY_REDIRECT_URI: str = os.getenv("SPOTIFY_REDIRECT_URI", "")
 
 settings = Settings() # Create an instance of the Settings class to access configuration values throughout the application
