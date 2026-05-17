@@ -3,7 +3,7 @@ User top track database model.
 
 This model owns the relationship between a user and their top tracks.
 
-The ranking is stored separtely from the track because "top track" changes
+The ranking is stored separately from the track because "top track" changes
 over time, and we want to be able to track the history of a user's top tracks.
 """
 

@@ -10,3 +10,4 @@ from app.models.artist import Artist
 from app.models.track import Track
 from app.models.user_top_artist import UserTopArtist
 from app.models.user_top_track import UserTopTrack
+from app.models.recommend_track import RecommendedTrack

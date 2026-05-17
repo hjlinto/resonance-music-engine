@@ -1,7 +1,7 @@
 """
 Spotify ingestion service.
 
-This module owns the responbility of converting Spotify API responses into
+This module owns the responsibility of converting Spotify API responses into
 normalized database records.
 
 Routes should not contain data-normalization logic because that logic belongs
@@ -47,18 +47,20 @@ def upsert_artist(db: Session, spotify_artist: dict) -> Artist:
     """
 
     spotify_artist_id = spotify_artist["id"]
-
+    images = spotify_artist.get("images", [])
+    image_url = images[0].get("url") if images else None
+    genres = ", ".join(spotify_artist.get("genres", []))
+    
     artist = db.query(Artist).filter(Artist.spotify_artist_id == spotify_artist_id).first()
 
     if artist is None:
-        artist = Artist(
-            spotify_artist_id=spotify_artist_id,
-            name=spotify_artist.get("name")
-        )
+        artist = Artist(spotify_artist_id=spotify_artist_id)
         db.add(artist)
 
-    else:
-        artist.name = spotify_artist.get("name")
+    artist.name = spotify_artist.get("name")
+    artist.genres = genres
+    artist.popularity = spotify_artist.get("popularity")
+    artist.image_url = image_url
 
     db.commit()
     db.refresh(artist)
@@ -74,20 +76,26 @@ def upsert_track(db: Session, track_data: dict) -> Track:
 
     track = db.query(Track).filter(Track.spotify_track_id == spotify_track_id).first()
     
-    album_name = track_data.get("album", {}).get("name")
+    album = track_data.get("album", {})
+    artists = track_data.get("artists", [])
+    images = album.get("images", [])
+
+    artist_name = artists[0].get("name") if artists else None
+    album_name = album.get("name")
+    album_image_url = images[0].get("url") if images else None
     
     if track is None:
-        track = Track(
-            spotify_track_id=spotify_track_id,
-            name=track_data.get("name"),
-            album_name=album_name
-        )
+        track = Track(spotify_track_id=spotify_track_id)
         db.add(track)
 
-    else:
-        track.name = track_data.get("name")
-        track.artist_name = track_data["artists"][0]["name"] if track_data.get("artists") else None
-        track.album_name = album_name
+    track.name = track_data.get("name")
+    track.artist_name = artist_name
+    track.album_name = album_name
+    track.album_image_url = album_image_url
+    track.preview_url = track_data.get("preview_url")
+    print(track_data.get("name"), track_data.get("popularity"))
+    print(track_data.keys())
+    track.popularity = track_data.get("popularity")
 
     db.commit()
     db.refresh(track)
@@ -127,3 +135,20 @@ def save_user_top_tracks(db: Session, user: User, spotify_top_tracks: list[dict]
         db.add(user_top_track)
 
     db.commit()
+
+def update_track_audio_features(db: Session, track: Track, audio_features: dict) -> Track:
+    """
+    Update a track with Spotify audio feature data.
+    """
+
+    track.danceability = audio_features.get("danceability")
+    track.energy = audio_features.get("energy")
+    track.valence = audio_features.get("valence")
+    track.tempo = audio_features.get("temp")
+    track.acousticness = audio_features.get("acousticness")
+    track.instrumentalness = audio_features.get("instrumentalness")
+
+    db.commit()
+    db.refresh(track)
+
+    return track

@@ -72,3 +72,16 @@ def get_user_top_artists(access_token: str, limit: int = 20) -> dict:
         "/me/top/artists", 
         params={"limit": limit, "time_range": "medium_term"}
     )
+
+def get_track_audio_features(access_token: str, track_id: str) -> dict:
+    """
+    Fetch Spotify audio features for a single track.
+
+    Audio Features provide numeric music attributes used by
+    the recommendation engine.
+    """
+
+    return spotify_get(
+        access_token,
+        f"/audio-features/{track_id}"
+    )

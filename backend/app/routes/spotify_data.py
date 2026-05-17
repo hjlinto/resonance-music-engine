@@ -3,7 +3,7 @@ Spotify data routes.
 
 These routes expose Spotify listening data through our backend.
 
-The routes coordinate HTTP behaviior, database access, and service calls
+The routes coordinate HTTP behavior, database access, and service calls
 while keeping Spotify API request details inside the service layer.
 """
 
@@ -11,10 +11,12 @@ from fastapi import APIRouter, HTTPException
 
 from app.db.database import SessionLocal
 from app.models.user import User
+from app.models.track import Track
 from app.services.spotify_api_service import get_user_top_artists, get_user_top_tracks
 from app.services.spotify_auth_service import refresh_access_token
 from app.services.spotify_ingestion_service import save_user_top_artists, save_user_top_tracks
 from app.services.spotify_token_service import get_decrypted_access_token, update_access_token, get_decrypted_refresh_token
+
 
 router = APIRouter(prefix="/spotify", tags=["spotify"])
 
@@ -129,7 +131,24 @@ def sync_spotify_data(spotify_user_id: str) -> dict:
             user, 
             top_tracks_response.get("items", []),
         )
+        """
+        This feature is commented out due to Spotify revoking access to audio features for tracks
 
+        for spotify_track in top_tracks_response.get("items", []):
+            track = db.query(Track).filter(
+                Track.spotify_track_id == spotify_track["id"]
+            ).first()
+
+            if track is None:
+                continue
+
+            audio_features = get_track_audio_features(
+                access_token,
+                spotify_track["id"]
+            )
+
+            update_track_audio_features(db, track, audio_features)
+        """
         return {
             "message": "Spotify data synced successfully",
             "top_tracks_saved": len(top_tracks_response.get("items", [])),

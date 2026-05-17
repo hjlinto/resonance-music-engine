@@ -17,7 +17,7 @@ from app.db.database import Base
 class UserTopArtist(Base):
     """User top artist database model."""
 
-    __tablename__ = "user_top_artist"
+    __tablename__ = "user_top_artists"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
