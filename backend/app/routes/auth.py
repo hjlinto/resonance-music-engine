@@ -10,6 +10,9 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from requests import HTTPError
 
+from app.db.database import SessionLocal
+from app.services.spotify_api_service import get_current_spotify_user
+from app.services.spotify_token_service import upsert_spotify_token
 from app.services.spotify_auth_service import build_spotify_login_url
 from app.services.spotify_auth_service import exchange_code_for_token
 
@@ -56,9 +59,25 @@ def spotify_callback(
             detail="Failed to exchange Spotify authorization code for access token.",
         ) from exc
     
+    spotify_user = get_current_spotify_user(token_response["access_token"])
+
+    db = SessionLocal()
+
+    try:
+        upsert_spotify_token(
+            db=db,
+            spotify_user_id=spotify_user["id"],
+            access_token=token_response["access_token"],
+            refresh_token=token_response.get("refresh_token"),
+            expires_in=token_response["expires_in"],
+        )
+
+    finally:
+        db.close()
+
     return {
         "message": "Spotify authentication successful.",
-        "access_token_received": "access_token" in token_response,
-        "refresh_token_received": "refresh_token" in token_response,
-        "expires_in": token_response.get("expires_in"),
+        "spotify_user": spotify_user["id"],
+        "tokens_stored": True,
     }
+

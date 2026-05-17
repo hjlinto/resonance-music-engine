@@ -78,3 +78,37 @@ def exchange_code_for_token(code: str) -> dict:
 
     return response.json()
 
+def refresh_access_token(refresh_token: str) -> dict:
+    """
+    Request a new Spotify access token using a stored refresh token.
+
+    This keeps the user authenticated without needing to log in again after the access 
+    token expires, without needing to go through the full OAuth flow again.
+    """
+
+    if not settings.SPOTIFY_CLIENT_ID or not settings.SPOTIFY_CLIENT_SECRET:
+        raise ValueError("Spotify client credentials are not configured.")
+    
+    credentials = f"{settings.SPOTIFY_CLIENT_ID}:{settings.SPOTIFY_CLIENT_SECRET}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+
+    headers = {
+        "Authorization": f"Basic {encoded_credentials}",
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+
+    payload = {
+        "grant_type": "refresh_token",
+        "refresh_token": refresh_token,
+    }
+
+    response = requests.post(
+        settings.SPOTIFY_TOKEN_URL,
+        headers=headers,
+        data=payload,
+        timeout=10,
+    )
+
+    response.raise_for_status() # Raise an error for bad responses
+
+    return response.json()

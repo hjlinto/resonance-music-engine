@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     SPOTIFY_AUTH_URL: str = "https://accounts.spotify.com/authorize"
     SPOTIFY_TOKEN_URL: str = "https://accounts.spotify.com/api/token"
     SPOTIFY_SCOPES: str = "user-top-read"
-    SPOTIFY_REDIRECT_URI: str = os.getenv("SPOTIFY_REDIRECT_URI", "")
+    SPOTIFY_REDIRECT_URI: str = os.getenv("SPOTIFY_REDIRECT_URI", "") # Redirect URI for Spotify OAuth, should be set in environment variables
+    TOKEN_ENCRYPTION_KEY: str = os.getenv("TOKEN_ENCRYPTION_KEY") # Encryption key for securing sensitive tokens, should be set in environment variables
 
 settings = Settings() # Create an instance of the Settings class to access configuration values throughout the application
